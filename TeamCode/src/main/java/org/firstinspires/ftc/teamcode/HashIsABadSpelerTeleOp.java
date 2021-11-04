@@ -50,6 +50,8 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
     private CRServo Flapper;
     private double drive;
     private double turn;
+    private final double DriveSpeed = 0.75;
+    private final double FlapperDownPosition = 0.5;
 
     @Override
     public void runOpMode () {
@@ -73,8 +75,6 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
 //        HorizontalSlidePack.setDirection(DcMotor.Direction.FORWARD);
 //        VerticalSlidePack.setDirection(DcMotor.Direction.FORWARD);
 //        EaterMotor.setDirection(DcMotor.Direction.FORWARD);
-
-        double DriveSpeed = 0.75;
 
         waitForStart();
         telemetry.addData("Status","TeleOp");
@@ -110,7 +110,7 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
             }
             
             if (FlapperUp || FlapperDown) {
-                Flapper.getController().setServoPosition(Flapper.getPortNumber(), FlapperUp ? 0 : 90);
+                Flapper.getController().setServoPosition(Flapper.getPortNumber(), FlapperUp ? 0 : FlapperDownPosition);
             }
 
 //            if (HorizontalSlidePackBackward != 0 || HorizontalSlidePackForward != 0) {
