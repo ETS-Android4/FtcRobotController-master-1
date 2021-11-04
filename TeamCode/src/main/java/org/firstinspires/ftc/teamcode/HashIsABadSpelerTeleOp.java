@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.CRServo;
 
 
 @TeleOp(name="HashIsABadSpelerTeleop", group="Linear Opmode")
@@ -46,6 +47,7 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
     private DcMotor BLMotor;
     private DcMotor BRMotor;
     private DcMotor Flywheel;
+    private CRServo Flapper;
     private double drive;
     private double turn;
 
@@ -57,6 +59,7 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
         BLMotor = hardwareMap.dcMotor.get("2");
         BRMotor = hardwareMap.dcMotor.get("3");
         Flywheel = hardwareMap.dcMotor.get("Fly");
+        Flapper = hardwareMap.crservo.get("Flap");
 //        DcMotor HorizontalSlidePack = hardwareMap.dcMotor.get("HorizontalSlidePack");
 //        DcMotor VerticalSlidePack = hardwareMap.dcMotor.get("VerticalSlidePack");
 //        DcMotor EaterMotor = hardwareMap.dcMotor.get("Eater");
@@ -66,6 +69,7 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
         BRMotor.setDirection(DcMotor.Direction.REVERSE);
         BLMotor.setDirection(DcMotor.Direction.REVERSE);
         Flywheel.setDirection(DcMotor.Direction.FORWARD);
+        Flapper.setDirection(DcMotorSimple.Direction.FORWARD);
 //        HorizontalSlidePack.setDirection(DcMotor.Direction.FORWARD);
 //        VerticalSlidePack.setDirection(DcMotor.Direction.FORWARD);
 //        EaterMotor.setDirection(DcMotor.Direction.FORWARD);
@@ -90,6 +94,8 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
             double FlywheelCounterClockwise = gamepad1.right_bumper ? 1 : 0;
             double LeftStrafe = gamepad1.left_trigger;
             double RightStrafe = gamepad1.right_trigger;
+            boolean FlapperUp = gamepad2.y;
+            boolean FlapperDown = gamepad2.a;
 //            double HorizontalSlidePackForward = gamepad2.right_bumper ? 1 : 0;
 //            double HorizontalSlidePackBackward = gamepad2.right_trigger > 0 ? 1 : gamepad2.right_trigger < 0 ? -1 : 0;
 //            double VerticalSlidePackForward = gamepad2.dpad_up ? 1 : 0;
@@ -101,6 +107,10 @@ public class HashIsABadSpelerTeleOp extends LinearOpMode {
                 Flywheel.setPower(0.5 * (FlywheelCounterClockwise + FlywheelClockwise));
             } else {
                 Flywheel.setPower(0);
+            }
+            
+            if (FlapperUp || FlapperDown) {
+                Flapper.getController().setServoPosition(Flapper.getPortNumber(), FlapperUp ? 0 : 90);
             }
 
 //            if (HorizontalSlidePackBackward != 0 || HorizontalSlidePackForward != 0) {
