@@ -27,6 +27,8 @@ public class HashIsABadSpelerAuto extends LinearOpMode {
     private DcMotor BLMotor;
     private DcMotor BRMotor;
     private DcMotor Flywheel;
+    private final int PPR = 145;
+    private final double DrivePower = 0.75;
     // private DcMotor HorizontalSlidePack;
     // private DcMotor VerticalSlidePack;
     // private DcMotor EaterMotor;
@@ -63,8 +65,6 @@ public class HashIsABadSpelerAuto extends LinearOpMode {
         // VerticalSlidePack.setDirection(DcMotor.Direction.FORWARD);
         // EaterMotor.setDirection(DcMotor.Direction.FORWARD);
 
-        double DrivePower = 0.75;
-
         waitForStart();
         telemetry.addData("Status","TeleOp");
         telemetry.update();
@@ -79,15 +79,19 @@ public class HashIsABadSpelerAuto extends LinearOpMode {
         // VerticalSlidePack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // EaterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        FLMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BRMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        FRMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BLMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FLMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BRMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        FRMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BLMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // HorizontalSlidePack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // VerticalSlidePack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // EaterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        
+        FLMotor.setPower(DrivePower);
+        BRMotor.setPower(DrivePower);
+        FRMotor.setPower(DrivePower);
+        BLMotor.setPower(DrivePower);
 
         telemetry.addData("Mode", "waiting for start");
         telemetry.update();
@@ -101,43 +105,43 @@ public class HashIsABadSpelerAuto extends LinearOpMode {
         sleep(50);
         //The actual program
         eTime.reset();
-        drive(DriveDirection.FORWARD, DrivePower, 100);
+        drive(DriveDirection.FORWARD, DrivePower, 1 * PPR);
         sleep(500); // For Testing Purposes
-        drive(DriveDirection.LEFT, DrivePower, 100);
+        drive(DriveDirection.LEFT, DrivePower, 1 * PPR);
         sleep(500);
-        drive(DriveDirection.FORWARD, DrivePower, 500);
+        drive(DriveDirection.FORWARD, DrivePower, 5 * PPR);
     }
     
-    private void drive(DriveDirection direction, double power, double time) {
+    private void drive(DriveDirection direction, double power, double position) {
         eTime.reset();
         switch(direction) {
             case FORWARD:
-                FLMotor.setPower(power);
-                FRMotor.setPower(power);
-                BLMotor.setPower(power);
-                BRMotor.setPower(power);
+                FLMotor.setTargetPosition(position);
+                FRMotor.setTargetPosition(position);
+                BLMotor.setTargetPosition(position);
+                BRMotor.setTargetPosition(position);
                 break;
             case LEFT:
-                FLMotor.setPower(-1 * power);
-                FRMotor.setPower(power);
-                BLMotor.setPower(-1 * power);
-                BRMotor.setPower(power);
+                FLMotor.setTargetPosition(-1 * position);
+                FRMotor.setTargetPosition(position);
+                BLMotor.setTargetPosition(-1 * position);
+                BRMotor.setTargetPosition(position);
                 break;
             case RIGHT:
-                FLMotor.setPower(power);
-                FRMotor.setPower(-1 * power);
-                BLMotor.setPower(power);
-                BRMotor.setPower(-1 * power);
+                FLMotor.setTargetPosition(position);
+                FRMotor.setTargetPosition(-1 * position);
+                BLMotor.setTargetPosition(position);
+                BRMotor.setTargetPosition(-1 * position);
                 break;
         } 
-        while(opModeIsActive() && eTime.milliseconds() < time){
-            telemetry.addData("Time:", eTime);
-            telemetry.update();
-        }
-        FLMotor.setPower(0);
-        FRMotor.setPower(0);
-        BLMotor.setPower(0);
-        BRMotor.setPower(0);
+//         while(opModeIsActive() && eTime.milliseconds() < time){
+//             telemetry.addData("Time:", eTime);
+//             telemetry.update();
+//         }
+//         FLMotor.setPower(0);
+//         FRMotor.setPower(0);
+//         BLMotor.setPower(0);
+//         BRMotor.setPower(0);
     }
     private void timedrive(double power, double time){
         eTime.reset();
