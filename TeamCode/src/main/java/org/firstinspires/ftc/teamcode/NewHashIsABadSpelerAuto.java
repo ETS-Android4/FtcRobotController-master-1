@@ -37,13 +37,13 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         REDWAREHOUSE
     }
 
-    private final StartingPositionEnum STARTING_POSITION = StartingPositionEnum.BLUEWAREHOUSE;
+    private final StartingPositionEnum STARTING_POSITION = StartingPositionEnum.BLUESTORAGEUNIT;
     private final double BATTERY_LEVEL = 1;
     private final double DrivePower = 0.75;
-    private final double GrabberLGrabPosition = 0.25;
-    private final double GrabberLReleasePosition = 0.55;
-    private final double GrabberRGrabPosition = 0.6;
-    private final double GrabberRReleasePosition = 0.3;
+    private final double GrabberLGrabPosition = 0.55;
+    private final double GrabberLReleasePosition = 0.25;
+    private final double GrabberRGrabPosition = 0.3;
+    private final double GrabberRReleasePosition = 0.6;
 
     private DcMotor FLMotor;
     private DcMotor FRMotor;
@@ -219,15 +219,15 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
 
             // Step 5.5: Re-align by Strafing Left
-            strafe(getCorrectDirection(DriveDirection.LEFT, needInvert), getDrivePower(0.3), 200);
+            strafe(getCorrectDirection(DriveDirection.LEFT, needInvert), getDrivePower(0.3), 300);
             sleep(500);
 
             // Step 6: Backward
-            drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 900);
+            drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 1100);
             sleep(500);
 
             // Step 7: Strafe Left
-            strafe(getCorrectDirection(DriveDirection.LEFT, needInvert), getDrivePower(DrivePower), 1300);
+            strafe(getCorrectDirection(DriveDirection.LEFT, needInvert), getDrivePower(DrivePower), 1100);
             sleep(1000);
 
 
@@ -236,7 +236,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
             sleep(500);
 
             // Step 8: Strafe Right
-            strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 1000);
+            strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 800);
             sleep(500);
 
         } else {
@@ -258,7 +258,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
         // Step 1: Forward
         drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 650);
-        sleep(500);
+        sleep(565);
 
         // Step 2: Left 45
         drive(getCorrectDirection(DriveDirection.LEFT, needInvert), getDrivePower(DrivePower), 380);
@@ -278,8 +278,15 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         // drive(DriveDirection.LEFT, DrivePower, );
 
         // Step 6: Backward to Carousel
+        if (position == StartingPositionEnum.BLUESTORAGEUNIT) {
+            drive(DriveDirection.LEFT, getDrivePower(DrivePower), 75);
+        } else {
+            drive(DriveDirection.RIGHT, getDrivePower(DrivePower), 65);
+        }
+        sleep(500);
+
         drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 1000);
-        drive(DriveDirection.BACKWARD, getDrivePower(0.15), 2400);
+        drive(DriveDirection.BACKWARD, getDrivePower(0.15), 2200);
         sleep(2000);
 
         // Step 7: Spin Carousel
@@ -309,7 +316,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 1150);
 
         // Step 12: Backward to Storage Unit
-        drive(DriveDirection.BACKWARD, getDrivePower(0.4), 1500);
+        drive(DriveDirection.BACKWARD, getDrivePower(0.4), 1350);
     }
 
     private int getDriveTime(int time) {
