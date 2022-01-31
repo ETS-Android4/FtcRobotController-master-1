@@ -48,14 +48,14 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         BOTTOM
     }
 
-    private final StartingPositionEnum STARTING_POSITION = StartingPositionEnum.BLUESTORAGEUNIT;
+    private final StartingPositionEnum STARTING_POSITION = StartingPositionEnum.REDWAREHOUSE;
     private final double BATTERY_LEVEL = 1;
     private final double DrivePower = 0.75;
     private final double SlidePackPower = 0.5;
-    private final double GrabberLGrabPosition = 0.25;
-    private final double GrabberLReleasePosition = 0.55;
-    private final double GrabberRGrabPosition = 0.6;
-    private final double GrabberRReleasePosition = 0.3;
+    private final double GrabberLGrabPosition = 0.55;
+    private final double GrabberLReleasePosition = 0.25;
+    private final double GrabberRGrabPosition = 0.3;
+    private final double GrabberRReleasePosition = 0.6;
 
     private DcMotor FLMotor;
     private DcMotor FRMotor;
@@ -208,29 +208,36 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
             case MIDDLE:
                 return 500;
             case BOTTOM:
-                return 200;
+                return 450;
         }
+        return 200;
     }
 
     private void pickUpBlock(ShippingHubLevel shl) {
+        moveSlidePack(SlidePackDirection.UP, -getDrivePower(SlidePackPower), 500);
+        sleep(200);
+
+        openClaw();
+        sleep(200);
+
         // Step 1: Drive Forward (Push Block Forward)
-        drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 200);
+        drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 190);
         sleep(200);
 
         // Step 2: Drive Backward
-        drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 200);
+        drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 180);
         sleep(200);
 
         // Step 3: Move Slide Pack Down
-        moveSlidePack(SlidePackDirection.DOWN, getDrivePower(SlidePackPower), 200);
+        moveSlidePack(SlidePackDirection.DOWN, -getDrivePower(SlidePackPower), 500);
         sleep(200);
 
-        // Step 4: Grab Block
+        // // Step 4: Grab Block
         closeClaw();
-        sleep(200);
+        sleep(800);
 
-        // Step 5: Move Slide Pack Up
-        moveSlidePack(SlidePackDirection.UP, getDrivePower(SlidePackPower), convertShippingHubLevelToMs(shl);
+        // // Step 5: Move Slide Pack Up
+        moveSlidePack(SlidePackDirection.UP, -getDrivePower(SlidePackPower), convertShippingHubLevelToMs(shl));
         sleep(200);
     }
 
@@ -238,7 +245,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         boolean needInvert = (position != StartingPositionEnum.BLUEWAREHOUSE);
 
         // Step 1: Forward
-        drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 1500);
+        drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 1300);
         sleep(500);
 
         // Step 1.5: Turn toward carousel
@@ -246,7 +253,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         sleep(500);
 
         // Step 2: Forward
-        drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 210);
+        drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 230);
         sleep(1000);
 
         // Step 3: Drop Block
@@ -262,7 +269,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
         if (normal) {
             // ALTERNATIVELY: Step 5: Strafe Right
-            strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 1200);
+            strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 1400);
             strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(0.3), 1900);
             sleep(500);
 
