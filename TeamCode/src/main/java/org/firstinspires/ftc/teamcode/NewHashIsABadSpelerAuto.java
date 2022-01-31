@@ -36,19 +36,19 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         REDSTORAGEUNIT,
         REDWAREHOUSE
     }
-    
+
     enum SlidePackDirection {
         UP,
         DOWN
     }
-    
+
     enum ShippingHubLevel {
         TOP,
         MIDDLE,
         BOTTOM
     }
 
-    private final StartingPositionEnum STARTING_POSITION = StartingPositionEnum.BLUEWAREHOUSE;
+    private final StartingPositionEnum STARTING_POSITION = StartingPositionEnum.BLUESTORAGEUNIT;
     private final double BATTERY_LEVEL = 1;
     private final double DrivePower = 0.75;
     private final double SlidePackPower = 0.5;
@@ -141,7 +141,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         sleep(50);
         //The actual program
         eTime.reset();
-        
+
         pickUpBlock(getCameraReading());
 
         switch (STARTING_POSITION) {
@@ -171,7 +171,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
                 break;
         }
     }
-    
+
     private ShippingHubLevel getCameraReading() {
         return ShippingHubLevel.BOTTOM;
     }
@@ -200,7 +200,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
         return invertedDirection;
     }
-    
+
     private int convertShippingHubLevelToMs(ShippingHubLevel shl) {
         switch (shl) {
             case TOP:
@@ -211,12 +211,12 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
                 return 200;
         }
     }
-    
+
     private void pickUpBlock(ShippingHubLevel shl) {
         // Step 1: Drive Forward (Push Block Forward)
         drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 200);
         sleep(200);
-        
+
         // Step 2: Drive Backward
         drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 200);
         sleep(200);
@@ -224,7 +224,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         // Step 3: Move Slide Pack Down
         moveSlidePack(SlidePackDirection.DOWN, getDrivePower(SlidePackPower), 200);
         sleep(200);
-        
+
         // Step 4: Grab Block
         closeClaw();
         sleep(200);
@@ -240,7 +240,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         // Step 1: Forward
         drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 1500);
         sleep(500);
-        
+
         // Step 1.5: Turn toward carousel
         drive(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 650);
         sleep(500);
@@ -272,11 +272,11 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
             sleep(500);
 
             // Step 6: Backward
-            drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 900);
+            drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 1100);
             sleep(500);
 
             // Step 7: Strafe Left
-            strafe(getCorrectDirection(DriveDirection.LEFT, needInvert), getDrivePower(DrivePower), 1300);
+            strafe(getCorrectDirection(DriveDirection.LEFT, needInvert), getDrivePower(DrivePower), 1100);
             sleep(1000);
 
 
@@ -285,7 +285,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
             sleep(500);
 
             // Step 8: Strafe Right
-            strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 1000);
+            strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 800);
             sleep(500);
 
         } else {
@@ -300,6 +300,10 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
     private void doStorageUnitActions(StartingPositionEnum position) {
         boolean needInvert = (position != StartingPositionEnum.BLUESTORAGEUNIT);
+
+        // Step 0: Grip Block Tightly
+        GrabberL.getController().setServoPosition(GrabberL.getPortNumber(), GrabberLGrabPosition);
+        GrabberR.getController().setServoPosition(GrabberR.getPortNumber(), GrabberRGrabPosition);
 
         // Step 1: Forward
         drive(DriveDirection.FORWARD, getDrivePower(DrivePower), 650);
@@ -322,13 +326,21 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         // drive(DriveDirection.LEFT, DrivePower, );
 
         // Step 6: Backward to Carousel
-        drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 1000);
-        
         if (position == StartingPositionEnum.BLUESTORAGEUNIT) {
-            drive(DriveDirection.LEFT, getDrivePower(DrivePower), 200);
+            drive(DriveDirection.LEFT, getDrivePower(DrivePower), 75);
+        } else {
+            drive(DriveDirection.RIGHT, getDrivePower(DrivePower), 65);
         }
-        
-        drive(DriveDirection.BACKWARD, getDrivePower(0.15), 2400);
+        sleep(500);
+
+        drive(DriveDirection.BACKWARD, getDrivePower(DrivePower), 1000);
+
+//        if (position == StartingPositionEnum.BLUESTORAGEUNIT) {
+//            drive(DriveDirection.LEFT, getDrivePower(DrivePower), 200);
+//        }
+//
+//        drive(DriveDirection.BACKWARD, getDrivePower(0.15), 2400);
+        drive(DriveDirection.BACKWARD, getDrivePower(0.15), 2200);
         sleep(2000);
 
         // Step 7: Spin Carousel
@@ -357,14 +369,14 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         strafe(getCorrectDirection(DriveDirection.RIGHT, needInvert), getDrivePower(DrivePower), 1150);
 
         // Step 12: Backward to Storage Unit
-        drive(DriveDirection.BACKWARD, getDrivePower(0.4), 1500);
+        drive(DriveDirection.BACKWARD, getDrivePower(0.4), 1350);
     }
 
     private void openClaw() {
         GrabberL.getController().setServoPosition(GrabberL.getPortNumber(), GrabberLReleasePosition);
         GrabberR.getController().setServoPosition(GrabberR.getPortNumber(), GrabberRReleasePosition);
     }
-                      
+
     private void closeClaw() {
         GrabberL.getController().setServoPosition(GrabberL.getPortNumber(), GrabberLGrabPosition);
         GrabberR.getController().setServoPosition(GrabberR.getPortNumber(), GrabberRGrabPosition);
@@ -424,7 +436,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         BLMotor.setPower(0);
         BRMotor.setPower(0);
     }
-    
+
     private void moveSlidePack(SlidePackDirection spd, double power, double time) {
         eTime.reset();
         switch(spd) {
@@ -441,7 +453,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         }
         VerticalSlidePack.setPower(0);
     }
-    
+
     private void timedrive(double power, double time){
         eTime.reset();
         while(opModeIsActive() && eTime.milliseconds() < time){
