@@ -144,36 +144,36 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
         pickUpBlock(getCameraReading());
 
-        switch (STARTING_POSITION) {
-            case REDSTORAGEUNIT:
-                doStorageUnitActions(StartingPositionEnum.REDSTORAGEUNIT);
-                break;
-            case REDWAREHOUSE:
-                doWarehouseActions(StartingPositionEnum.REDWAREHOUSE, true);
-//                drive(DriveDirection.FORWARD, DrivePower, 700);
-//                sleep(500); // For Testing Purposes
-//                drive(DriveDirection.RIGHT, DrivePower, 700);
-//                sleep(500);
-//                drive(DriveDirection.FORWARD, .9, 1500);
-                break;
-            case BLUESTORAGEUNIT:
-                doStorageUnitActions(StartingPositionEnum.BLUESTORAGEUNIT);
-                break;
-            case BLUEWAREHOUSE:
-                doWarehouseActions(StartingPositionEnum.BLUEWAREHOUSE, true);
-//                drive(DriveDirection.FORWARD, DrivePower, 700);
-//                sleep(500); // For Testing Purposes
-//                drive(DriveDirection.LEFT, DrivePower, 700);
-//                sleep(500);
-//                drive(DriveDirection.FORWARD, .9, 1500);
-                break;
-            default:
-                break;
-        }
+//        switch (STARTING_POSITION) {
+//            case REDSTORAGEUNIT:
+//                doStorageUnitActions(StartingPositionEnum.REDSTORAGEUNIT);
+//                break;
+//            case REDWAREHOUSE:
+//                doWarehouseActions(StartingPositionEnum.REDWAREHOUSE, true);
+////                drive(DriveDirection.FORWARD, DrivePower, 700);
+////                sleep(500); // For Testing Purposes
+////                drive(DriveDirection.RIGHT, DrivePower, 700);
+////                sleep(500);
+////                drive(DriveDirection.FORWARD, .9, 1500);
+//                break;
+//            case BLUESTORAGEUNIT:
+//                doStorageUnitActions(StartingPositionEnum.BLUESTORAGEUNIT);
+//                break;
+//            case BLUEWAREHOUSE:
+//                doWarehouseActions(StartingPositionEnum.BLUEWAREHOUSE, true);
+////                drive(DriveDirection.FORWARD, DrivePower, 700);
+////                sleep(500); // For Testing Purposes
+////                drive(DriveDirection.LEFT, DrivePower, 700);
+////                sleep(500);
+////                drive(DriveDirection.FORWARD, .9, 1500);
+//                break;
+//            default:
+//                break;
+//        }
     }
 
     private ShippingHubLevel getCameraReading() {
-        return ShippingHubLevel.BOTTOM;
+        return ShippingHubLevel.MIDDLE;
     }
 
     private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
@@ -204,13 +204,13 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
     private int convertShippingHubLevelToMs(ShippingHubLevel shl) {
         switch (shl) {
             case TOP:
-                return 800;
+                return 900;
             case MIDDLE:
-                return 500;
+                return 610;
             case BOTTOM:
-                return 450;
+                return 290;
         }
-        return 200;
+        return 290;
     }
 
     private void pickUpBlock(ShippingHubLevel shl) {
@@ -236,7 +236,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         closeClaw();
         sleep(800);
 
-        // // Step 5: Move Slide Pack Up
+         // Step 5: Move Slide Pack Up
         moveSlidePack(SlidePackDirection.UP, -getDrivePower(SlidePackPower), convertShippingHubLevelToMs(shl));
         sleep(200);
     }
