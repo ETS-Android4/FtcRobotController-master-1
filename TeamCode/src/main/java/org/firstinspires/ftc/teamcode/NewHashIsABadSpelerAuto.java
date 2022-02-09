@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.annotation.SuppressLint;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gyroscope;
@@ -11,13 +13,22 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
+
+import java.util.List;
 
 
 @Autonomous(name="NewHashIsABadSpelerAuto")
@@ -74,6 +85,16 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
     private Orientation lastAngles = new Orientation();
     double globalAngle, power = .30, correction;
     private ElapsedTime eTime = new ElapsedTime();
+    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
+    private static final String[] LABELS = {
+//            "Ball",
+//            "Cube",
+            "Duck",
+//            "Marker"
+    };
+    private static final String VUFORIA_KEY = "AVPRW+T/////AAABmYg0Njwhc0n/teI+7Sz8f/Baxyp0o6W48fBEflz8RZs3G/bVjI/5PyebGV6SkXhE1unHTRVzOVCo2cuuePhML8YCeHWm1dHZ2KbshLfc/yne7rfe2VaKPR3rrJXPF5CdMTWj4nTxm6w7KxiqvtvF2p2si1FrculcXUwbHeZ9X3O6VSntXMuNJDxXJEC3O5hT5kb7ZzsSWlot9YfUqJRxttrYYz8Xu1D2IhtOs26a2A9FC8afgGouyHucBDfl+WP59+H6wYaXRbyvcFdytq9Fp7mlSsA9RA6DV70PtJWDmehLO5hhOKq4ihVNCjJcgG38UefDAyDhWWMdjRwsiaVctq6QkmG1oMuTfIF1Dun2lDpZ";
+    private VuforiaLocalizer vuforia;
+    private TFObjectDetector tfod;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -142,8 +163,12 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         //The actual program
         eTime.reset();
 
-        pickUpBlock(getCameraReading());
-
+//        pickUpBlock(getCameraReading());
+        eTime.reset();
+        while (eTime.seconds() < 5) {
+            telemetry.addData("Camera Reading:", getCameraReading());
+            telemetry.update();
+        }
 //        switch (STARTING_POSITION) {
 //            case REDSTORAGEUNIT:
 //                doStorageUnitActions(StartingPositionEnum.REDSTORAGEUNIT);
@@ -172,9 +197,9 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 //        }
     }
 
-    private ShippingHubLevel getCameraReading() {
-        return ShippingHubLevel.MIDDLE;
-    }
+//    private ShippingHubLevel getCameraReading() {
+//        return ShippingHubLevel.MIDDLE;
+//    }
 
     private DriveDirection getCorrectDirection(DriveDirection direction, boolean needInvert) {
         if (!needInvert)
@@ -730,4 +755,101 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
 
 //Land Function
+    /**
+     * Initialize the Vuforia localization engine.
+     */
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
+
+    /**
+     * Initialize the TensorFlow ObjThe arguments TFOD_MODEL_ASSET, LABELS are defined earlier in the op mode and are season specific.ect Detection engine.
+     */
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.8f;
+        tfodParameters.isModelTensorFlow2 = true;
+        tfodParameters.inputSize = 320;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
+    }
+
+    @SuppressLint("DefaultLocale")
+    private int getCameraReading() {
+        // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
+        // first.
+        initVuforia();
+        initTfod();
+
+        /**
+         * Activate TensorFlow Object Detection before we wait for the start command.
+         * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
+         **/
+        if (tfod != null) {
+            tfod.activate();
+            telemetry.addData("TFOD is Activated", "");
+
+            // The TensorFlow software will scale the input images from the camera to a lower resolution.
+            // This can result in lower detection accuracy at longer distances (> 55cm or 22").
+            // If your target is at distance greater than 50 cm (20") you can adjust the magnification value
+            // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
+            // should be set to the value of the images used to create the TensorFlow Object Detection model
+            // (typically 16/9).
+            tfod.setZoom(2.5, 16.0/9.0);
+        }
+
+//        if (tfod == null) {
+//            telemetry.addData("TFOD is Null", "");
+//            telemetry.update();
+//            return 0;
+//        }
+
+        /** Wait for the game to begin */
+        telemetry.addData(">", "Press Play to start op mode");
+        telemetry.update();
+        waitForStart();
+        while (opModeIsActive()) {
+            // getUpdatedRecognitions() will return null if no new information is available since
+            // the last time that call was made.
+//            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            List<Recognition> recognitions = tfod.getRecognitions();
+            telemetry.addData("count", recognitions.size());
+            if (recognitions != null) {
+                telemetry.addData("# Object Detected", recognitions.size());
+
+                // step through the list of recognitions and display boundary info.
+                int i = 0;
+                for (Recognition recognition : recognitions) {
+                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                            recognition.getLeft(), recognition.getTop());
+                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                            recognition.getRight(), recognition.getBottom());
+                    i++;
+
+                    telemetry.addData("Object Detected", recognition.getLabel());
+                    //  ** ADDED **
+                }
+                tfod.shutdown();
+                return 1;
+            } else {
+                telemetry.addData("getRecognitions returns null", "");
+            }
+            telemetry.update();
+        }
+        return 0;
+    }
 }
