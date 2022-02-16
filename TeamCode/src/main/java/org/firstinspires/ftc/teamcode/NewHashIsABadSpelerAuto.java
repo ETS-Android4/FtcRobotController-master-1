@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.vuforia.PIXEL_FORMAT;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -27,7 +29,10 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.vuforia.Image;
+import com.vuforia.Vuforia;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 
@@ -67,6 +72,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
     private final double GrabberLReleasePosition = 0.25;
     private final double GrabberRGrabPosition = 0.3;
     private final double GrabberRReleasePosition = 0.6;
+    private ShippingHubLevel shippingHubLevel = ShippingHubLevel.BOTTOM;
 
     private DcMotor FLMotor;
     private DcMotor FRMotor;
@@ -100,42 +106,41 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException
     {
         //Maps hardware for all parts
-        FLMotor = hardwareMap.dcMotor.get("1");
-        FRMotor = hardwareMap.dcMotor.get("0");
-        BLMotor = hardwareMap.dcMotor.get("2");
-        BRMotor = hardwareMap.dcMotor.get("3");
-        Flywheel = hardwareMap.dcMotor.get("Fly");
-        GrabberL = hardwareMap.crservo.get("GL");
-        GrabberR = hardwareMap.crservo.get("GR");
-        VerticalSlidePack = hardwareMap.dcMotor.get("VSP");
-        VerticalSlidePack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // FLMotor = hardwareMap.dcMotor.get("1");
+        // FRMotor = hardwareMap.dcMotor.get("0");
+        // BLMotor = hardwareMap.dcMotor.get("2");
+        // BRMotor = hardwareMap.dcMotor.get("3");
+        // Flywheel = hardwareMap.dcMotor.get("Fly");
+        // GrabberL = hardwareMap.crservo.get("GL");
+        // GrabberR = hardwareMap.crservo.get("GR");
+        // VerticalSlidePack = hardwareMap.dcMotor.get("VSP");
+        // VerticalSlidePack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // HorizontalSlidePack = hardwareMap.dcMotor.get("HorizontalSlidePack");
         // VerticalSlidePack = hardwareMap.dcMotor.get("VerticalSlidePack");
         // EaterMotor = hardwareMap.dcMotor.get("Eater");
 
-        FLMotor.setDirection(DcMotor.Direction.REVERSE);
-        FRMotor.setDirection(DcMotor.Direction.FORWARD);
-        BLMotor.setDirection(DcMotor.Direction.REVERSE);
-        BRMotor.setDirection(DcMotor.Direction.FORWARD);
-        Flywheel.setDirection(DcMotor.Direction.FORWARD);
-        GrabberL.setDirection(CRServo.Direction.FORWARD);
-        GrabberR.setDirection(CRServo.Direction.REVERSE);
-        VerticalSlidePack.setDirection(DcMotor.Direction.FORWARD);
+        // FLMotor.setDirection(DcMotor.Direction.REVERSE);
+        // FRMotor.setDirection(DcMotor.Direction.FORWARD);
+        // BLMotor.setDirection(DcMotor.Direction.REVERSE);
+        // BRMotor.setDirection(DcMotor.Direction.FORWARD);
+        // Flywheel.setDirection(DcMotor.Direction.FORWARD);
+        // GrabberL.setDirection(CRServo.Direction.FORWARD);
+        // GrabberR.setDirection(CRServo.Direction.REVERSE);
+        // VerticalSlidePack.setDirection(DcMotor.Direction.FORWARD);
         // HorizontalSlidePack.setDirection(DcMotor.Direction.FORWARD);
         // VerticalSlidePack.setDirection(DcMotor.Direction.FORWARD);
         // EaterMotor.setDirection(DcMotor.Direction.FORWARD);
 
-        waitForStart();
         telemetry.addData("Status","Auto");
         telemetry.update();
 
         //Configures settings for different parts
-        FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        Flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        VerticalSlidePack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // Flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // VerticalSlidePack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // HorizontalSlidePack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // VerticalSlidePack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // EaterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -153,6 +158,12 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         telemetry.addData("Mode", "waiting for start");
         telemetry.update();
 
+        boolean isCameraReady = getCameraReady();
+
+        /** Wait for the game to begin */
+        telemetry.addData(">", "Press Play to start op mode");
+        telemetry.update();
+
         // wait for start button.
         waitForStart();
 
@@ -163,12 +174,14 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         //The actual program
         eTime.reset();
 
-//        pickUpBlock(getCameraReading());
-        eTime.reset();
-        while (eTime.seconds() < 5) {
-            telemetry.addData("Camera Reading:", getCameraReading());
-            telemetry.update();
+        if (isCameraReady) {
+            shippingHubLevel = getCameraReading();
         }
+
+        telemetry.addData("shippingHubLevel", shippingHubLevel);
+        telemetry.update();
+
+        // pickUpBlock(shippingHubLevel);
 //        switch (STARTING_POSITION) {
 //            case REDSTORAGEUNIT:
 //                doStorageUnitActions(StartingPositionEnum.REDSTORAGEUNIT);
@@ -261,7 +274,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         closeClaw();
         sleep(800);
 
-         // Step 5: Move Slide Pack Up
+        // Step 5: Move Slide Pack Up
         moveSlidePack(SlidePackDirection.UP, -getDrivePower(SlidePackPower), convertShippingHubLevelToMs(shl));
         sleep(200);
     }
@@ -759,6 +772,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
      * Initialize the Vuforia localization engine.
      */
     private void initVuforia() {
+        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true);
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
@@ -769,7 +783,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
+        vuforia.setFrameQueueCapacity(10);
         // Loading trackables is not necessary for the TensorFlow Object Detection engine.
     }
 
@@ -787,10 +801,7 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
     }
 
-    @SuppressLint("DefaultLocale")
-    private int getCameraReading() {
-        // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
-        // first.
+    private boolean getCameraReady() {
         initVuforia();
         initTfod();
 
@@ -811,45 +822,133 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
             tfod.setZoom(2.5, 16.0/9.0);
         }
 
-//        if (tfod == null) {
-//            telemetry.addData("TFOD is Null", "");
+        if (tfod == null) {
+            telemetry.addData("TFOD is Null", "");
+            telemetry.update();
+            return false;
+        }
+        return true;
+    }
+
+    // @SuppressLint("DefaultLocale")
+//    private ShippingHubLevel getCameraReading() {
+//        eTime.reset();
+//
+//        int count = 0;
+//        while (eTime.milliseconds() < 5000) {
+//            // getUpdatedRecognitions() will return null if no new information is available since
+//            // the last time that call was made.
+////            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+//            List<Recognition> recognitions = tfod.getRecognitions();
+//            telemetry.addData("count", count);
+//            count++;
+//            if (recognitions.size() != 0) {
+//                telemetry.addData("# Object Detected", recognitions.size());
+//
+//                // step through the list of recognitions and display boundary info.
+//                int i = 0;
+//                double center = 0;
+//                for (Recognition recognition : recognitions) {
+//                    center = (recognition.getLeft() + recognition.getRight())/2;
+//                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+//                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+//                            recognition.getLeft(), recognition.getTop());
+//                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+//                            recognition.getRight(), recognition.getBottom());
+//                    i++;
+//
+//                    telemetry.addData("Object Detected", recognition.getLabel());
+//                    if (center > 300)
+//                        return ShippingHubLevel.TOP;
+//                    else if (center > 200)
+//                        return ShippingHubLevel.MIDDLE;
+//                    //  ** ADDED **
+//                }
+//            } else {
+//                telemetry.addData("getRecognitions returns null", "");
+//            }
+//            telemetry.addData("recognition size", recognitions.size());
 //            telemetry.update();
-//            return 0;
 //        }
-
-        /** Wait for the game to begin */
-        telemetry.addData(">", "Press Play to start op mode");
-        telemetry.update();
-        waitForStart();
-        while (opModeIsActive()) {
-            // getUpdatedRecognitions() will return null if no new information is available since
-            // the last time that call was made.
-//            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-            List<Recognition> recognitions = tfod.getRecognitions();
-            telemetry.addData("count", recognitions.size());
-            if (recognitions != null) {
-                telemetry.addData("# Object Detected", recognitions.size());
-
-                // step through the list of recognitions and display boundary info.
-                int i = 0;
-                for (Recognition recognition : recognitions) {
-                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                            recognition.getLeft(), recognition.getTop());
-                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                            recognition.getRight(), recognition.getBottom());
-                    i++;
-
-                    telemetry.addData("Object Detected", recognition.getLabel());
-                    //  ** ADDED **
-                }
-                tfod.shutdown();
-                return 1;
-            } else {
-                telemetry.addData("getRecognitions returns null", "");
-            }
+//        if (tfod != null) {
+//            tfod.shutdown();
+//        }
+//        return ShippingHubLevel.BOTTOM;
+//    }
+    private ShippingHubLevel getCameraReading() {
+        VuforiaLocalizer.CloseableFrame frame = null;
+        try {
+            frame = vuforia.getFrameQueue().take(); //takes the frame at the head of the queue
+        } catch(Exception e) {
+            telemetry.addData("e", "E");
             telemetry.update();
         }
-        return 0;
+        if (frame == null) return ShippingHubLevel.BOTTOM;
+        long numImages = frame.getNumImages();
+        Image image = null;
+        for (int i = 0; i < numImages; i++) {
+            if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB888) {
+                image = frame.getImage(i);
+                eTime.reset();
+                while (eTime.milliseconds() < 1000) {
+                    telemetry.addData("AA", frame.getImage(i).getFormat());
+                    telemetry.update();
+                }
+                break;
+            }
+            eTime.reset();
+            while (eTime.milliseconds() < 1000) {
+                telemetry.addData("AA", frame.getImage(i).getFormat());
+                telemetry.update();
+            }
+        }
+
+        int[] yellow = {0, 0, 0};
+
+        if (image != null) {
+            ByteBuffer pixels = image.getPixels();
+            byte[] pixelArray = new byte[pixels.remaining()];
+            pixels.get(pixelArray, 0, pixelArray.length);
+            int imgWidth = image.getWidth();
+            for (int i = 0; i < pixelArray.length; i += 2) {
+                if (i % imgWidth <= imgWidth / 3) {
+                    // LEFT!
+                    if (isYellow(pixelArray[i], pixelArray[i+1]))
+                        yellow[0]++;
+                } else if (i % imgWidth <= imgWidth * 2 / 3) {
+                    // MIDDLE
+                    if (isYellow(pixelArray[i], pixelArray[i+1]))
+                        yellow[1]++;
+                } else {
+                    // RIGHT!
+                    if (isYellow(pixelArray[i], pixelArray[i+1]))
+                        yellow[2]++;
+                }
+                telemetry.addData("help", pixelArray[i]);
+                telemetry.update();
+            }
+            telemetry.addData("!!", "!");
+            telemetry.update();
+        } else {
+
+        }
+        frame.close();
+        int max_index = 1;
+        for (int i = 0; i < yellow.length; i++) {
+            if (yellow[i] > yellow[max_index])
+                max_index = i;
+        }
+
+        if (max_index == 0)
+            return ShippingHubLevel.BOTTOM;
+        if (max_index == 1)
+            return ShippingHubLevel.MIDDLE;
+        return ShippingHubLevel.TOP;
+    }
+
+    private boolean isYellow(byte b1, byte b2) {
+        // GGGBBBBB RRRRRGGG;
+        
+        return true;
     }
 }
