@@ -911,12 +911,12 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
             pixels.get(pixelArray, 0, pixelArray.length);
             int imgWidth = image.getWidth();
             for (int i = 0; i < pixelArray.length; i += 2) {
-                if (i % imgWidth <= imgWidth / 3) {
+                if (i % (2 * imgWidth) <= imgWidth / 3) {
                     // LEFT!
                     if (isYellow(pixelArray[i], pixelArray[i+1]))
                         yellow[0]++;
-                } else if (i % imgWidth <= imgWidth * 2 / 3) {
-                    // MIDDLE
+                } else if (i % (2 * imgWidth) <= imgWidth * 2 / 3) {
+                    // MIDDLE!
                     if (isYellow(pixelArray[i], pixelArray[i+1]))
                         yellow[1]++;
                 } else {
@@ -929,11 +929,10 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
             }
             telemetry.addData("!!", "!");
             telemetry.update();
-        } else {
-
         }
+        
         frame.close();
-        int max_index = 1;
+        int max_index = 0;
         for (int i = 0; i < yellow.length; i++) {
             if (yellow[i] > yellow[max_index])
                 max_index = i;
@@ -948,7 +947,69 @@ public class NewHashIsABadSpelerAuto extends LinearOpMode {
 
     private boolean isYellow(byte b1, byte b2) {
         // GGGBBBBB RRRRRGGG;
+        String s1 = String.format("%8s", Integer.toBinaryString(b2 & 0xFF)).replace(' ', '0');
+        String s2 = String.format("%8s", Integer.toBinaryString(b1 & 0xFF)).replace(' ', '0');
+        // RRRRRGGG GGGBBBBB;
+        int[] color = new int[3];
+        String r = s1.substring(0, 5);
+        String g = s1.substring(5) + s2.substring(0, 3);
+        String b = s2.substring(3);
+        color[0] = convertBitStringToInt(r);
+        color[1] = convertBitStringToInt(g);
+        color[2] = convertBitStringToInt(b);
+        int[] hsv = convertRGBtoHSV(color);
+        return hsv[0] >= 48 && hsv[0] <= 61 && hsv[1] > 50 && hsv[2] > 70;
+    }
+    
+    private int[] convertRGBtoHSV(int[] rgb) {
+        double rPrime = (double) rgb[0]/31;
+        double gPrime = (double) rgb[1]/63;
+        double bPrime = (double) rgb[2]/31;
+        double cMax = Math.max(rPrime, Math.max(gPrime, bPrime));
+        double cMin = Math.min(rPrime, Math.min(gPrime, bPrime));
+        double delta = cMax - cMin;
+        int[] hsv = new int[3];
         
-        return true;
+        // calculate hue
+        if (delta == 0)
+            hsv[0] = 0;
+        else if (cMax == rPrime)
+            hsv[0] = (int) (60 * (((gPrime - bPrime) / delta) % 6));
+        else if (cMax == gPrime)
+            hsv[0] = (int) (60 * (((bPrime - rPrime) / delta) + 2));
+        else 
+            hsv[0] = (int) (60 * (((rPrime - gPrime) / delta) + 4));
+        
+        // calculate saturation
+        if (cMax == 0)
+            hsv[1] = 0;
+        else
+            hsv[1] = (int) (delta / cMax);
+        
+        // calculate value
+        hsv[2] = cMax;
+        
+        return hsv;
+    }
+    
+    private int convertBitStringToInt(String s) {
+        int sum = 0;
+        // Little Endian
+//         int digit = 0;
+//         for (char c : s.toCharArray()) {
+//             if (c == '1') {
+//                 sum += Math.pow(2, digit);
+//             }
+//             digit++;
+//         }
+        // Big Endian
+        int digit = s.length() - 1;
+        for (char c : s.toCharArray()) {
+            if (c == '1') {
+                sum += Math.pow(2, digit);
+            }
+            digit--;
+        }
+        return sum;
     }
 }
